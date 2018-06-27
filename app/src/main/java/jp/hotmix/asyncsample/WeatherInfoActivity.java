@@ -1,5 +1,6 @@
 package jp.hotmix.asyncsample;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -66,9 +67,6 @@ public class WeatherInfoActivity extends AppCompatActivity {
         lvCityList.setAdapter(adapter);
         lvCityList.setOnItemClickListener(new ListItemClickListener());
 
-
-
-
     }
 
     private class ListItemClickListener implements AdapterView.OnItemClickListener {
@@ -81,6 +79,41 @@ public class WeatherInfoActivity extends AppCompatActivity {
 
             TextView tvCityName = findViewById(R.id.tvCityName);
             tvCityName.setText(cityName + "の天気：");
+
+            TextView tvWeatherTelop = findViewById(R.id.tvWeatherTelop);
+            TextView tvWeatherDesc = findViewById(R.id.tvWeatherDesc);
+
+            WeatherInfoReceiver receiver = new WeatherInfoReceiver(tvWeatherTelop, tvWeatherDesc);
+            receiver.execute(cityId);
+        }
+    }
+
+    private class WeatherInfoReceiver extends AsyncTask<String, String, String> {
+        private TextView _tvWeatherTelop;
+        private TextView _tvWeatherDesc;
+
+        public WeatherInfoReceiver(TextView tvWeatherTelop, TextView tvWeatherDesc){
+            _tvWeatherTelop = tvWeatherTelop;
+            _tvWeatherDesc = tvWeatherDesc;
+        }
+        @Override
+        protected String doInBackground(String... strings) {
+            String id = strings[0];
+            String urlStr = "http://weather.livedoor.com/forecast/webservice/json/v1?city=" + id;
+            String result = "";
+
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            String telop = "";
+            String desc = "";
+
+            _tvWeatherTelop.setText(telop);
+            _tvWeatherDesc.setText(desc);
+
         }
     }
 }
