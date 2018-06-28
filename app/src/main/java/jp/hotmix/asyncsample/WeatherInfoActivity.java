@@ -9,10 +9,23 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class WeatherInfoActivity extends AppCompatActivity {
 
@@ -102,6 +115,33 @@ public class WeatherInfoActivity extends AppCompatActivity {
             String urlStr = "http://weather.livedoor.com/forecast/webservice/json/v1?city=" + id;
             String result = "";
 
+            HttpURLConnection con = null;
+            InputStream is = null;
+            try {
+                URL url = new URL(urlStr);
+                con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");
+                con.connect();
+                is = con.getInputStream();
+                result = is2String(is);
+            } catch (MalformedURLException ex) {
+
+            } catch (IOException ex) {
+
+            } finally {
+                if (con != null) {
+                    con.disconnect();
+                }
+
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+
+                    }
+                }
+            }
+
 
             return result;
         }
@@ -111,9 +151,33 @@ public class WeatherInfoActivity extends AppCompatActivity {
             String telop = "";
             String desc = "";
 
+            try {
+                JSONObject rootJSON = new JSONObject(result);
+                JSONObject descriptionJSON = rootJSON.getJSONObject("description");
+                desc = descriptionJSON.getString("text");
+
+                JSONArray forecasts = rootJSON.getJSONArray("forecasts");
+                JSONObject forecastsNow = forecasts.getJSONObject(0);
+                telop = forecastsNow.getString("telop");
+
+            } catch (JSONException ex) {
+
+            }
+
             _tvWeatherTelop.setText(telop);
             _tvWeatherDesc.setText(desc);
 
+        }
+
+        private String is2String(InputStream is) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuffer sb = new StringBuffer();
+            char[] b = new char[1024];
+            int line;
+            while(0 <= (line = reader.read(b))) {
+                sb.append(b, 0, line);
+            }
+            return sb.toString();
         }
     }
 }
